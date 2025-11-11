@@ -1,0 +1,80 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: food-delivery-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - foodnet
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: food-delivery-redisinsight
+    ports:
+      - "5541:5540"
+    volumes:
+      - redisinsight_data:/db
+    restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - foodnet
+
+  mongodb:
+    image: mongo:6.0
+    container_name: food-delivery-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: Vinit@7521
+      MONGO_INITDB_DATABASE: fooddeliverydb
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    networks:
+      - foodnet
+
+  backend:
+    image: node:20-alpine
+    container_name: food-delivery-backend
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - ./.env
+    environment:
+      # Ensure the app binds to the container port we expose
+      - PORT=8080
+      - NODE_ENV=production
+      # Ensure containers talk over the compose network by service name
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_URI=mongodb://root:Vinit%407521@mongodb:27017/fooddeliverydb?authSource=admin
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mongodb
+      - redis
+    command: sh -c "npm ci && node src/index.js"
+    restart: unless-stopped
+    networks:
+      - foodnet
+
+
+networks:
+  foodnet:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
+  redisinsight_data:
+    driver: local
+  mongodb_data:
+    driver: local

@@ -1,0 +1,39 @@
+services:
+  frontend-dev:
+    image: node:20-alpine
+    container_name: food-delivery-frontend-dev
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_HOST=0.0.0.0
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    restart: unless-stopped
+    networks:
+      - food-delivery-network
+
+  frontend-prod:
+    image: node:20-alpine
+    container_name: food-delivery-frontend-prod
+    working_dir: /app
+    ports:
+      - "5174:5173"
+    volumes:                     # ✅ Added this section
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
+    restart: unless-stopped
+    networks:
+      - food-delivery-network
+
+networks:
+  food-delivery-network:
+    name: food-delivery-network

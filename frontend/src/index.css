@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+
+*{
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+
+::-webkit-scrollbar,
+::-webkit-scrollbar{
+    display: none;
+}
+
+/* Custom Toast Styling */
+[data-hot-toast] {
+    z-index: 9999 !important;
+}
+
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+}
+
+@media (max-width: 640px) {
+    .toast-container {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+    }
+}
